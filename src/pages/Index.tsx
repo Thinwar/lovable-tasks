@@ -1,12 +1,67 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { useAppState } from "@/hooks/useAppState";
+import { ProjectSidebar } from "@/components/ProjectSidebar";
+import { KanbanBoard } from "@/components/KanbanBoard";
+import { DashboardView } from "@/components/DashboardView";
+import { TaskModal } from "@/components/TaskModal";
+import { Task } from "@/lib/store";
 
 const Index = () => {
+  const {
+    projects,
+    tasks,
+    allTasks,
+    activeProjectId,
+    setActiveProjectId,
+    activeView,
+    setActiveView,
+    addTask,
+    updateTask,
+    deleteTask,
+    moveTask,
+  } = useAppState();
+
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
+
+  const handleNewTask = () => {
+    setEditingTask(null);
+    setModalOpen(true);
+  };
+
+  const handleEditTask = (task: Task) => {
+    setEditingTask(task);
+    setModalOpen(true);
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
+    <div className="flex h-screen w-full overflow-hidden bg-background">
+      <ProjectSidebar
+        projects={projects}
+        activeProjectId={activeProjectId}
+        onSelectProject={setActiveProjectId}
+        activeView={activeView}
+        onViewChange={setActiveView}
+        onNewTask={handleNewTask}
+      />
+
+      <main className="flex-1 overflow-hidden">
+        {activeView === "board" ? (
+          <KanbanBoard tasks={tasks} onMoveTask={moveTask} onEditTask={handleEditTask} />
+        ) : (
+          <DashboardView tasks={tasks} allTasks={allTasks} projects={projects} activeProjectId={activeProjectId} />
+        )}
+      </main>
+
+      <TaskModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        task={editingTask}
+        projectId={activeProjectId}
+        onSave={addTask}
+        onUpdate={updateTask}
+        onDelete={deleteTask}
+      />
     </div>
   );
 };
